@@ -1,3 +1,3 @@
 cls
-gcc -o test test.c
+gcc -o test ./src/test.c
 .\test

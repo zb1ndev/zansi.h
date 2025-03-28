@@ -1,5 +1,5 @@
 #define Z_ANSI_IMPLEMENTATION
-#include "zansi.h"
+#include "src/zansi.h"
 
 int main() {
 

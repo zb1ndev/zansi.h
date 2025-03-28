@@ -21,6 +21,8 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
+    WARNING : Depends on https://github.com/zb1ndev/zstring.h 
+
 */
 
 #if !defined(Z_ANSI_H)

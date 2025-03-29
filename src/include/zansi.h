@@ -45,8 +45,6 @@
     #define BG(color) "4"color
     #define BG_BRIGHT(color) "10"color
 
-    #define RESET           "\e[0m"
-
     #define BLACK           "0m"   
     #define RED             "1m"  
     #define GREEN           "2m"  
@@ -55,6 +53,8 @@
     #define PURPLE          "5m"  
     #define CYAN            "6m"  
     #define WHITE           "7m"
+
+    #define RESET           "\e[0m"
 
 #pragma endregion
 #pragma region Cursor

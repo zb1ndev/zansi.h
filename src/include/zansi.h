@@ -25,6 +25,13 @@
 
 */
 
+/* Goal for zansi.h :
+    - Basically Raylib but for terminal
+        - DrawRectangle(x,y,w,h,Color), etc.
+        - This means I need to make a draw loop and basically append commands and then execute them all at once
+          instead of just executing them immediately like we are doing now. 
+*/
+
 #if !defined(Z_ANSI_H)
 #define Z_ANSI_H
 
@@ -35,15 +42,18 @@
 
 #pragma region Colors
 
-    #define COLOR(color)           "\e[0;"color
-    #define BOLD(color)             "\e[1;"color
-    #define UNDERLINE(color)        "\e[4;"color
+    #define set_color(color)           "\e[0;"color
+    #define set_bold(color)             "\e[1;"color
+    #define set_underline(color)        "\e[4;"color
     
-    #define FG(color) "3"color
-    #define FG_BRIGHT(color) "7"color
+    #define fg(color) "3"color
+    #define bg(color) "4"color
 
-    #define BG(color) "4"color
-    #define BG_BRIGHT(color) "10"color
+    /* Brighter version of ```fg```. */
+    #define fgb(color) "7"color
+
+    /* Brighter version of ```bg```. */
+    #define bgb(color) "10"color
 
     #define BLACK           "0m"   
     #define RED             "1m"  
@@ -54,7 +64,7 @@
     #define CYAN            "6m"  
     #define WHITE           "7m"
 
-    #define RESET           "\e[0m"
+    #define reset           "\e[0m"
 
 #pragma endregion
 #pragma region Cursor
@@ -68,12 +78,6 @@
 
 #pragma endregion
 
-    /** A function that creates a format specifier that shifts content by ```amount```.
-     * @param amount The amount you want to shift the content.
-     * @returns A string with a format specifier that shifts content by ```amount```.
-     */
-    char* get_align_spec(ssize_t amount);
-
     /** A function that shifts cursor by ```amount``` in ```direction```.
      * @param direction The direction you want to shift the cursor.
      * @param amount The amount you want to shift the cursor.
@@ -85,12 +89,17 @@
      */
     void move_cursor(CursorDir direction); 
 
-    #define Z_ANSI_IMPLEMENTATION
-#if defined(Z_ANSI_IMPLEMENTATION)
+    /** A function that sets the cursor's position to home.
+     */
+    void set_cursor_home();
 
-    char* get_align_spec(ssize_t amount) {
-        return string_from_format("%%%ds", amount).content;
-    }
+    /** A function that sets the cursor's position to ```x```, ```y```.
+     * @param x The X position of the cursor.
+     * @param y The Y position of the cursor.
+     */
+    void set_cursor_position(ssize_t x, ssize_t y);
+
+#if defined(Z_ANSI_IMPLEMENTATION)
 
     void move_cursor_by(CursorDir direction, ssize_t amount) {
         printf("\033[%ld%c", amount, direction);
@@ -98,6 +107,14 @@
 
     void move_cursor(CursorDir direction) {
         move_cursor_by(direction, 1);
+    }
+
+    void set_cursor_home() {
+        printf("\033[H");
+    }
+
+    void set_cursor_position(ssize_t x, ssize_t y) {
+        printf("\033[%ld;%ldH", x, y);
     }
 
 #endif

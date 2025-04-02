@@ -21,8 +21,6 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-    WARNING : Depends on https://github.com/zb1ndev/zstring.h 
-
 */
 
 /* Goal for zansi.h :
@@ -36,9 +34,6 @@
 #define Z_ANSI_H
 
     #include <stdio.h>
-
-    #define Z_STRING_IMPLEMENTATION
-    #include "zstring.h"
 
 #pragma region Colors
 

@@ -43,15 +43,15 @@
     #include <stdio.h>
 
     #define ssize_t signed long
-    
-    typedef enum Z_Direction {
-        Up      = 'A', 
-        Down    = 'B', 
-        Right   = 'C',
-        Left    = 'D' 
-    } Z_Direction;
-
+   
     #if defined(unix)
+
+        typedef enum Z_Direction {
+            Up      = 'A', 
+            Down    = 'B', 
+            Right   = 'C',
+            Left    = 'D' 
+        } Z_Direction;
 
         #include <termios.h> // termios, TCSANOW, ECHO, ICANON
         #include <unistd.h>
@@ -64,8 +64,23 @@
         } Z_TerminalContext;
 
     #elif defined(_WIN32)
+
+        #include <windows.h>
+        #include <conio.h>
     
-        // Win32 Implementation
+        typedef enum Z_Direction {
+            Up      = 'H', 
+            Down    = 'P', 
+            Right   = 'M',
+            Left    = 'K' 
+        } Z_Direction;    
+
+        typedef struct Z_TerminalContext {
+
+            DWORD old;
+            HANDLE stdin_handle;
+
+        } Z_TerminalContext;
 
     #endif
 
@@ -134,9 +149,8 @@
     /** A function that shifts cursor by ```amount``` in ```direction```.
      * @param direction The direction you want to shift the cursor.
      * @param amount The amount you want to shift the cursor.
-     * @param offset Typically for the length of string printed before hand.
      */
-    void z_move_cursor_by(Z_Direction direction, ssize_t amount, ssize_t offset);
+    void z_move_cursor_by(char direction, ssize_t amount);
     
     /** A function that shifts cursor in ```direction```.
      * @param direction The direction you want to shift the cursor.
@@ -166,6 +180,11 @@
      */
     void z_clear_screen_and_set_home();
 
+    /** A function that enables cursor movement on windows.
+     * @note Deprecated on Unix Operating Systems.
+     */
+    void z_enable_ansi_escape_sequences();
+
 #if defined(Z_ANSI_IMPLEMENTATION)
 
     #if defined(unix)
@@ -179,7 +198,6 @@
             
         }
 
-        
         void z_disable_raw(Z_TerminalContext* context) {
 
             tcsetattr(STDIN_FILENO, TCSANOW, &context->old);
@@ -202,33 +220,86 @@
 
         }
 
+        void z_move_cursor_by(char direction, ssize_t amount) {
+            printf("\033[%ld%c", amount, direction);
+        }
+    
+
     #elif defined(_WIN32)
 
-        // Win32 Implementation
+        void z_enable_raw(Z_TerminalContext* context) {
 
+            context->stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
+            GetConsoleMode(context->stdin_handle, &context->old);
+        
+            DWORD newMode = context->old;
+            newMode &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
+            SetConsoleMode(context->stdin_handle, newMode);
+
+        }
+        
+        void z_disable_raw(Z_TerminalContext* context) {
+
+            SetConsoleMode(context->stdin_handle, context->old);
+
+        }
+        
+        int z_get_char_raw() {
+
+            Z_TerminalContext context;
+            z_enable_raw(&context);
+            int result = _getch(); 
+            
+            // For Arrow Keys
+            if (result == 224) 
+                result = _getch();
+            if (result == '\r')
+                result = '\n';
+
+            z_disable_raw(&context);
+            return result;
+
+        }
+
+        void z_enable_ansi_escape_sequences() {
+
+            HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+            DWORD mode = 0;
+        
+            if (out == INVALID_HANDLE_VALUE) return;
+            if (!GetConsoleMode(out, &mode)) return;
+        
+            mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(out, mode);
+
+        }
+
+        void z_move_cursor_by(char direction, ssize_t amount) {
+
+            z_enable_ansi_escape_sequences();
+            printf("\033[%ld%c", amount, direction);
+
+        }
+    
     #endif
-
-    void z_move_cursor_by(Z_Direction direction, ssize_t amount, ssize_t offset) {
-        printf("\033[%ld%c", amount + offset, direction);
-    }
 
     void z_move_cursor(Z_Direction direction, ssize_t offset) {
 
         switch (direction) {
         case Up:
-            z_move_cursor_by(Left, 3, offset);
-            z_move_cursor_by(Up, 1, 0);
+            z_move_cursor_by(Left, offset);
+            z_move_cursor_by(Up, 1);
             break;
         case Down:
-            z_move_cursor_by(Left, 3, offset);
-            z_move_cursor_by(Down, 1, 0);
+            z_move_cursor_by(Left, offset);
+            z_move_cursor_by(Down, 1);
             break;
         case Right:
-            z_move_cursor_by(Left, 3, offset);
-            z_move_cursor_by(Right, 1, 0);
+            z_move_cursor_by(Left, offset);
+            z_move_cursor_by(Right, 1);
             break;
         case Left:
-            z_move_cursor_by(Left, 4, offset);
+            z_move_cursor_by(Left, 1 + offset);
         default:
             break;
         }        

@@ -13,7 +13,7 @@
 
             printf("( Press 'q' to quit )");     // Length of 22
             input = z_get_char_raw();
-            z_move_cursor(input, 22);            // Offset of 22
+            z_move_cursor(input, 22 + 3);            // Offset of 22
             z_clear_screen();
 
         }

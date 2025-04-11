@@ -1,4 +1,4 @@
-/* zansi.h - v1.0.0 - MIT License - https://github.com/zb1ndev/zansi.h 
+/* zansi.h - v1.1.0 - MIT License - https://github.com/zb1ndev/zansi.h 
 
     MIT License
     Copyright (c) 2025 Joel Zbinden
@@ -34,6 +34,9 @@
 
     Version 1.0.0 Change-Log :
     - Made improvements to cursor movement
+
+    Version 1.1.0 Change-Log :
+    - Added Windows Support, cursor movement is touchy.
 
 */
 
